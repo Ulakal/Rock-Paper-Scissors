@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Rock Paper Scissors</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+      crossorigin="anonymous"></script>
+    <script type="text/javascript" src="./web3.min.js"></script>
+    <script type="text/javascript" src="./abi.js"></script>
+    <script type="text/javascript" src="./main.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="shortcut icon" href="">
+    <style>
+        .container {
+            float: left;
+        }
+        img {
+            width: 250px;
+            float: left;
+            padding: 10px;
+            border-radius: 30px;
+        }
+        img:hover {
+            opacity: 0.5;
+        }
+        .inputs {
+            float: left;
+            padding-left: 35px;
+        }
+        label {
+            padding-right: 190px;
+        }
+    </style>
+
+  </head>
+  <body>
+    <div class="jumbotron jumbotron-fluid">
+      <div>
+        <h1 class="display-4">Rock Paper Scissors</h1>
+        <p class="lead">Play a game! </p>
+
+        <div>
+            <div class="container">
+                <image src="img/rock.png" alt="rock"/>
+                
+                <image src="img/paper.png" alt="paper"/>
+                
+                <image src="img/scissors.png" alt="scissors"/>
+                
+            </div>
+            <div class="inputs">
+                <input type="radio" name="mybet" id="Rock" value="0">
+                <label for="Rock">
+                  Rock
+                </label>
+                <input type="radio" name="mybet" id="Paper" value="1">
+                <label for="Paper">
+                  Paper
+                </label>
+                <input type="radio" name="mybet" id="Scissors" value="2">
+                <label for="Scissors">
+                  Scissors
+                </label>
+            </div>
+            
+        </div>
+        <div>
+          <div>
+            <input type="number" min="0.1" class="form-control" name="betinput" id="bet_input" placeholder="Set your bet in ether" >
+            <button type="button" id="bet" class="btn btn-primary">Make a bet!</button>
+          </div>
+
+          <div>
+            <br>
+            <span id="action"></span>
+            <br>
+            <br>
+          </div>
+
+          <div>
+            <button type="button" id="withdraw" class="btn btn-primary">Withdraw your prize</button>
+          </div>
+
+          <div>
+            <br>
+            <button type="button" id="showbalance" class="btn btn-primary">Show contract balance</button>
+            <span id="balance"></span>
+          </div>
+          <div>
+            <button type="button" id="withdrawbalance" class="btn btn-primary">Withdraw contract balance, only owner!</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+
+  </body>
+</html>
