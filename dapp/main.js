@@ -2,7 +2,7 @@ var web3 = new Web3(Web3.givenProvider);
 var contractInstance;
 $(document).ready(function() {
     window.ethereum.enable().then(function(accounts){
-        contractInstance = new web3.eth.Contract(abi, "0x03bDaD7Ad007868B8f82b9d13F559EF82889d7b5", {from: accounts[0]});
+        contractInstance = new web3.eth.Contract(abi, "0xBA90FE4FCBa00B78692c86389e3437310bb19Da2", {from: accounts[0]});
         console.log(contractInstance);
     });
 
@@ -14,6 +14,10 @@ $(document).ready(function() {
 });
 
 async function makeAbet() {
+    $("#choice").text("");
+    $("#result").text("");
+    $("#action").text("");
+
     let blockNumber;
     let txHash;
     let queryId;
@@ -31,7 +35,7 @@ async function makeAbet() {
     .on('transactionHash', async function(TransactionHash){
         txHash = TransactionHash;
         console.log(txHash);
-        $("#action").text("Wait for your transacion to be confirmed");
+        $("#action").text("Wait for your transaction to be confirmed");
     })
     .on('receipt', async function(receipt){
         console.log(receipt);
@@ -41,7 +45,32 @@ async function makeAbet() {
     .on('confirmation', async function(confirmationNr){
         if(confirmationNr == 0) {
             $("#action").text("Transaction confirmed wait for the result");
+            var choice;
+            if (bet == 0){
+                choice = "rock";
+            } 
+            else if (bet == 1){
+                choice = "paper";
+            } else {
+                choice = "scissors";
+            }
+            $("#choice").text("Your choice is: " + choice);
         }
+    })
+
+    contractInstance.once('LogRandomNumber',
+    {
+        filter: queryId,
+        fromBlock: blockNumber,
+        toBlock: 'latest'
+    }, function(error, event){
+        console.log(event.returnValues);
+        var randomNumber = event.returnValues.number;
+        var randomChoice;
+        if (randomNumber == 0) {randomChoice = "rock";}
+        else if (randomNumber == 1) {randomChoice = "paper";}
+        else {randomChoice = "scissors";}
+        $("#result").text("Game choice is: " + randomChoice);
     })
 
     contractInstance.once('ResultOfTheGame', 
@@ -80,8 +109,10 @@ function withdraw() {
     .on('error', function(error){
         $("#action").text("You didn't win any prize");
     })
-    .on('TransactionHash', function(){
+    .on('transactionHash', function(transactionHash){
         $("#action").text("");
+        $("#choice").text("");
+        $("#result").text("");
     })
 }
 

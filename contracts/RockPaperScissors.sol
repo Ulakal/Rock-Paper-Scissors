@@ -55,7 +55,7 @@ contract RockPaperScissors is Ownable, usingProvable {
 
     function queryRandomNumber() private returns(bytes32) {
         uint256 QUERY_EXECUTION_DELAY = 0;
-        uint256 GAS_FOR_CALLBACK = 200000;
+        uint256 GAS_FOR_CALLBACK = 600000;
         bytes32 _queryId = provable_newRandomDSQuery(
             QUERY_EXECUTION_DELAY,
             NUM_RANDOM_BYTES_REQUESTED,
