@@ -93,7 +93,7 @@ var abi = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_bet",
+        "name": "mybet",
         "type": "uint256"
       }
     ],
@@ -143,6 +143,21 @@ var abi = [
       }
     ],
     "name": "__callback",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_newBet",
+        "type": "uint256"
+      }
+    ],
+    "name": "newBet",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

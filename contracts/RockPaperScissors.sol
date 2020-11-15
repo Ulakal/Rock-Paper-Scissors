@@ -15,9 +15,10 @@ contract RockPaperScissors is Ownable, usingProvable {
     }
 
     mapping (bytes32 => Player) players;
+    mapping (address => bytes32) IDs;
     mapping (address => bool) waitingList;
     mapping (bytes32 => bool) pendingQueries;
-    mapping (address => uint256) balances;
+    mapping (address => bool) win;
 
     event LogNewProvableQuery(string description);
     event ProvableQueryProofVerify(string description);
@@ -34,28 +35,36 @@ contract RockPaperScissors is Ownable, usingProvable {
         provable_setProof(proofType_Ledger);
     }
 
-    function bet(uint _bet) public payable {
+    function bet(uint mybet) public payable {
         require(msg.value >= 0.1 ether, "bet must be higher than 0.1 ether");
         require(msg.value <= address(this).balance, "bet can't be higher than balance of dapp");
         require(waitingList[msg.sender] == false);
+        require(win[msg.sender] == false, "previous prize not withdrawn");
         
+        waitingList[msg.sender] = true;
+        setAbet(msg.sender, mybet, msg.value);
+    } 
+
+    function setAbet(address _player, uint _mybet, uint _value) private {
         //sending a query for random number
         bytes32 queryId = queryRandomNumber();
-        emit LogQueryId(queryId);
 
         //setting a new bet
         Player memory newPlayer;
-        newPlayer.addr = msg.sender;
+        newPlayer.addr = _player;
         newPlayer.id = queryId;
-        newPlayer.bet = _bet;
-        newPlayer.amount = msg.value;
+        newPlayer.bet = _mybet;
+        newPlayer.amount = _value;
 
         players[queryId] = newPlayer;
-    } 
+        IDs[_player] = queryId;
+        
+        emit LogQueryId(queryId);
+    }
 
     function queryRandomNumber() private returns(bytes32) {
         uint256 QUERY_EXECUTION_DELAY = 0;
-        uint256 GAS_FOR_CALLBACK = 600000;
+        uint256 GAS_FOR_CALLBACK = 200000;
         bytes32 _queryId = provable_newRandomDSQuery(
             QUERY_EXECUTION_DELAY,
             NUM_RANDOM_BYTES_REQUESTED,
@@ -71,6 +80,7 @@ contract RockPaperScissors is Ownable, usingProvable {
         require (pendingQueries[_myid] == true);
         if (provable_randomDS_proofVerify__returnCode(_myid, _result, _proof) != 0) {
             emit ProvableQueryProofVerify("The proof verification has failed!");
+            waitingList[players[_myid].addr] = false;
         } else {
             uint randomNumber = uint256(keccak256(abi.encodePacked(_result)))%3;
             _verifyResult(_myid, randomNumber);
@@ -83,38 +93,46 @@ contract RockPaperScissors is Ownable, usingProvable {
         if ((players[id].bet == 0 && randomNumber == 2) 
         || (players[id].bet == 1 && randomNumber == 0)
         || (players[id].bet == 2 && randomNumber == 1)) {
-            balances[players[id].addr] = 2*players[id].amount;
-            emit  ResultOfTheGame(id, "won", true, balances[players[id].addr]);
+            uint prize = 2*players[id].amount;
+            win[players[id].addr] = true;
+            //balances[players[id].addr] = 2*players[id].amount;
+            delete waitingList[players[id].addr];
+            emit  ResultOfTheGame(id, "won", true, prize);
         }
         //player looses
         else if ((players[id].bet == 0 && randomNumber == 1) 
         || (players[id].bet == 1 && randomNumber == 2)
         || (players[id].bet == 2 && randomNumber == 0)) {
-            emit  ResultOfTheGame(id, "lost", false, balances[players[id].addr]);    
+            delete waitingList[players[id].addr];
+            delete players[id];
+            emit  ResultOfTheGame(id, "lost", false, 0);    
         }
-        //remis
+        //draw
         else {
-            //play another game
-            queryRandomNumber();
-            emit  ResultOfTheGame(id, "draw", false, balances[players[id].addr]);
+            //play another game, action in frontend, newBet()
+            //balances[players[id].addr] = players[id].amount;
+            emit  ResultOfTheGame(id, "draw", false, 0);
         }
         
         delete pendingQueries[id];
-        delete players[id];
     }
 
-    //function newBet(uint256 _newbet) public {
+    function newBet(uint256 _newBet) public {
+        require(waitingList[msg.sender] == true);
 
-    //}
+        setAbet(msg.sender, _newBet, players[IDs[msg.sender]].amount);
+    }
 
     function withdrawBalance () external returns(uint256) {
-        require(balances[msg.sender] > 0);
-        uint256 toTransfer = balances[msg.sender];
+        //require(balances[msg.sender] > 0);
+        require(win[msg.sender] == true);
+        uint256 toTransfer = 2*players[IDs[msg.sender]].amount;
 
-        delete balances[msg.sender];
-        delete waitingList[msg.sender];
+        delete win[msg.sender];
+        delete players[IDs[msg.sender]];
         msg.sender.transfer(toTransfer);
-        assert(balances[msg.sender] == 0);
+        //assert(balances[msg.sender] == 0);
+        assert(players[IDs[msg.sender]].amount == 0);
        
         return toTransfer;
     }
